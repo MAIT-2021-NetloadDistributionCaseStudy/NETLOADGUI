@@ -152,5 +152,5 @@ class Page(QWidget):
                 val1.append(l[0])
         
         self.avg=sum(val1) / len(val1)
-        print(self.avg)
+        #print(self.avg)
         self.calc.setText(str(self.avg))
