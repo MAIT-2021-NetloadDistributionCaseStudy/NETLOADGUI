@@ -1,3 +1,5 @@
+from PyQt5 import QtWidgets, QtGui, QtCore
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QStandardItemModel, QStandardItem
@@ -42,59 +44,85 @@ class PandasTable(QWidget):
 class Page(QWidget):
 
     def UI(self,window:QWidget):
-      self.df = None
-      import_button2=QPushButton('Import packets')
-      import_button2.clicked.connect(self.import_file)
+        self.df = None
+        import_button2=QPushButton('Import packets')
+        import_button2.setStyleSheet('QPushButton {background-color: grey}')
+        import_button2.setFixedWidth(500)
+        import_button2.clicked.connect(self.import_file)
+        button_size = QtCore.QSize(350, 30)
+        label_size = QtCore.QSize(140, 30)
+        #self.check1=QRadioButton('Plot Cycle Times')
+        #self.check2=QRadioButton('Calculate Delay of Packets within the Test setup')
+        srcLabel=QLabel('Choose Source Device')
+        srcLabel.setFixedSize(label_size)
+        srcLabel.setFont(QtGui.QFont('Arial',10,2))
+        portA_Label=QLabel('Choose Port A')
+        portA_Label.setFixedSize(label_size)
+        portA_Label.setFont(QFont('Arial',10,2))
+        portB_Label=QLabel('Choose Port B')
+        portB_Label.setFixedSize(label_size)
+        portB_Label.setFont(QFont('Arial',10,2))
 
-      #self.check1=QRadioButton('Plot Cycle Times')
-      #self.check2=QRadioButton('Calculate Delay of Packets within the Test setup')
-      srcLabel=QLabel('Choose Source Filter')
-      portA_Label=QLabel('Choose Port A')
-      portB_Label=QLabel('Choose Port B')
-      self.portA=QComboBox()
-      self.portB=QComboBox()
-      self.source=QComboBox()
+        self.portA=QComboBox()
+        self.portA.setFixedSize(button_size)
+        self.portA.setFont(QFont('Arial',13,2))
 
+        self.portB=QComboBox()
+        self.portB.setFixedSize(button_size)
+        self.portB.setFont(QFont('Arial',13,2))
 
-      self.cal=QPushButton('Calculate Packet delay in-between selected ports')
-      self.cal.clicked.connect(self.calcAvgDelay)
-      self.cal2=QPushButton('Calculate the Average cycle time of packets')
-      self.cal2.clicked.connect(self.calcCycleTime)
-      self.plot=QPushButton('View Plots')
-      self.plot.clicked.connect(self.viewPlots)
+        self.source=QComboBox()
+        self.source.setFixedSize(button_size)
+        self.source.setFont(QFont('Arial',13,2))
 
-      self.plot2=QPushButton('View Plots')
-      self.plot2.clicked.connect(self.viewPlots2)
-      self.calcLabel=QLabel('Average Delay: ')
-      self.calc=QLabel()
-      self.cycLabel=QLabel('Average Cycle Time: ')
-      self.avgCycleTime=QLabel()
-      self.calc.setStyleSheet("background-color: white")
-      self.clear=QPushButton('Clear current packets')
-      self.addNew=QPushButton('Import New Packets')
-
-
-
-      self.main2=QVBoxLayout()
-      subMain=QHBoxLayout()
-      topLeft=QFormLayout()
-      topRight=QFormLayout()
-      topLeft.addRow(import_button2)
-      topLeft.addRow(srcLabel,self.source)
-      topLeft.addRow(portA_Label,self.portA)
-      topLeft.addRow(portB_Label,self.portB)
-      topRight.addRow(self.cal,self.plot)
-      topRight.addRow(self.calcLabel,self.calc)
-      topRight.addRow(self.cal2,self.plot2)
-      topRight.addRow(self.cycLabel,self.avgCycleTime)
-      topLeft.addRow(self.clear,self.addNew)
-      subMain.addLayout(topLeft)
-      subMain.addLayout(topRight)
-      #self.main2.addWidget(import_button2)
-      self.main2.addLayout(subMain)
+        self.source.currentTextChanged.connect(self.choosePorts)
 
 
-      window.tab2.setLayout(self.main2)
+        self.cal=QPushButton('Calculate Packet delay in-between selected ports')
+        self.cal.setStyleSheet('QPushButton {background-color: grey}')
+
+        self.cal.setFixedSize(button_size)
+        self.cal.clicked.connect(self.calcAvgDelay)
+        self.plot=QPushButton('View Plots')
+        self.plot.setFixedSize(button_size)
+        self.plot.setStyleSheet('QPushButton {background-color: grey}')
+        self.plot.clicked.connect(self.viewPlots)
+
+        
+        self.calcLabel=QLabel('Average Delay (s): ')
+        self.calcLabel.setFont(QtGui.QFont('Arial',13,2,1))
+        self.calc=QLabel()
+        self.calc.setFont(QtGui.QFont('Arial', 13,5))
+        self.calc.setStyleSheet("background-color: white;")
+        #self.label_1.setStyleSheet("")
+        self.calcLabel2=QLabel('Average IP traffic (Byte): ')
+        self.calcLabel2.setFont(QtGui.QFont('Arial',13,2,1))
+        self.calc2=QLabel()
+        self.calc2.setFont(QtGui.QFont('Arial', 13,5))
+        self.calc2.setStyleSheet("background-color: white;")
+
+
+
+        self.main2=QVBoxLayout()
+        subMain=QHBoxLayout()
+        topLeft=QFormLayout()
+        topRight=QFormLayout()
+        topLeft.addRow(import_button2)
+        topLeft.addRow(srcLabel,self.source)
+        topLeft.addRow(portA_Label,self.portA)
+        topLeft.addRow(portB_Label,self.portB)
+        topRight.addRow(self.cal)
+        topRight.addRow(self.calcLabel,self.calc)
+        topRight.addRow(self.calcLabel2,self.calc2)
+        topRight.addRow(self.plot)
+        
+        subMain.addLayout(topLeft)
+        subMain.addLayout(topRight)
+        #self.main2.addWidget(import_button2)
+        self.main2.addLayout(subMain)
+
+
+        window.tab2.setLayout(self.main2)
 
     def import_file(self):
       #global df
@@ -113,27 +141,35 @@ class Page(QWidget):
       
       
     def display_csv_table(self,df):
-      # Create a new window to display the table
-      self.table_window = QWidget()
-      self.table_window.setWindowTitle('CSV Table')
-      self.table_window.setGeometry(100, 100, 800, 600)
+        # Create a new window to display the table
+        self.table_window = QWidget()
+        self.table_window.setWindowTitle('CSV Table')
+        self.table_window.setGeometry(100, 100, 800, 600)
 
-      # Create a layout for the window
-      layout = QVBoxLayout()
-      screen_geometry = QDesktopWidget().availableGeometry()
-      # Create a PandasTable widget
+        # Create a layout for the window
+        layout = QVBoxLayout()
+        screen_geometry = QDesktopWidget().availableGeometry()
+        # Create a PandasTable widget
+            
         
-      
-      arr1=df['Source'].unique()
-      arr2=df['Reception Port'].unique()
-      for a in arr1:
-        self.source.addItem(str(a))
-      
-      for b in arr2:
-        self.portA.addItem(str(b))
-        self.portB.addItem(str(b))
-      table = PandasTable(df)
-      self.main2.addWidget(table)
+        arr1=df['Source'].unique()
+        
+        for a in arr1:
+            self.source.addItem(str(a))
+        
+        table = PandasTable(df)
+        self.main2.addWidget(table)
+
+    def choosePorts(self):
+        self.portA.clear()
+        self.portB.clear()
+
+        df=self.df.copy()
+        filtered_df=df[(df['Source']==self.source.currentText())]
+        arr=filtered_df['Reception Port'].unique()
+        for a in arr:
+            self.portA.addItem(str(a))
+            self.portB.addItem(str(a))
 
     def calcAvgDelay(self):
       #def cal(data,portA,portB):
@@ -147,6 +183,8 @@ class Page(QWidget):
         data2 = df[(df['Reception Port'] == int(prtB)) & (df['Source']==src) ]
         count=data2['Time'].count()
         val1=[]
+        length=[]
+
 
         for i in range(0,count):
             r1=data1.iloc[[i],[6]].values
@@ -160,12 +198,31 @@ class Page(QWidget):
                 delta=data1.iloc[[i]]["Time"].values
                 delta2=data2.iloc[[i]]["Time"].values
                 l=delta2-delta
-                val1.append(l[0])
+                l_abs=abs(l[0])
+
+                if l[0] < 0:
+                    port=prtB
+                    s=data2.iloc[[i]].index.values
+                    f=data1.iloc[[i]].index.values
+                else:
+                    port=prtA
+                    s=data1.iloc[[i]].index.values
+                    f=data2.iloc[[i]].index.values
+                
+                newFrame=data[s[0]:f[0]]
+                tcpFrame=newFrame[(newFrame['Reception Port'] == int(port)) ]
+                x=tcpFrame['Length'].sum()
+                length.append(x)
+                val1.append(l_abs)
         
         self.avg=sum(val1) / len(val1)
+        self.avg2=sum(length) / len(length)
         #print(self.avg)
         self.calc.setText(str(self.avg))
+        self.calc2.setText(str(self.avg2))
+
         self.val=val1
+        self.length=length
     
     
     def calcCycleTime(self):
@@ -203,28 +260,38 @@ class Page(QWidget):
         #print(self.deltas)
         
     def viewPlots(self):
-        fig = plt.figure(figsize=(8, 6))
-        x=len(self.val)
-        plt.plot(range(0,x), self.val,'b')
-        plt.xlabel('Packet')
-        plt.ylabel('Packet Delay')
-        plt.title('Delay time of packets within the test setup ')
+        fig, ax1 = plt.subplots()
+
+        color = 'tab:red'
+        ax1.set_xlabel('Packet')
+        ax1.set_ylabel('Delay between Ports-(s)', color=color,fontsize=15)
+        ax1.plot(range(0,len(self.val)),self.val, color=color)
+        ax1.tick_params(axis='y', labelcolor=color,labelsize=12)
+        ax1.set_title('Packet Delays alongside IP traffic')
+        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+        color = 'tab:blue'
+        ax2.set_ylabel('TCP Packet lengths-(Bytes)', color=color,fontsize=15)  # we already handled the x-label with ax1
+        ax2.plot(range(0,len(self.length)), self.length, color=color, linestyle=':')
+        ax2.tick_params(axis='y', labelcolor=color,
+                        labelsize=12)
+
+        #fig.tight_layout()  # otherwise the right y-label is slightly clipped
         graph_window = QDialog(self)
         graph_window.setWindowTitle('Graphs')
         # Embed the graph in the Qt window using FigureCanvasQTAgg
         canvas = FigureCanvasQTAgg(fig)
 
 
-        fig2=plt.figure(figsize=(8,6))
-        plt.boxplot(self.val)
-        plt.xlabel('Data Capture')
-        plt.ylabel('Packet Delay')
-        plt.title('Delay of packets Box Plots ')
-        canvas2=FigureCanvasQTAgg(fig2)
+        
         graph_window.setLayout(QVBoxLayout())
         graph_window.layout().addWidget(canvas)
-        graph_window.layout().addWidget(canvas2)
-
+       # graph_window.layout().addWidget(canvas2)
+        screen_geometry = QDesktopWidget().availableGeometry()
+        graph_window.setGeometry(
+            screen_geometry.width() / 2 - 400,
+            screen_geometry.height() / 2 - 300,
+            1000, 600)
 
         #graph_window.layout().addWidget(AvgLabel)
 
@@ -234,34 +301,3 @@ class Page(QWidget):
         # Close the previous figure to avoid displaying it in the Python output
         plt.close(fig)
 
-    def viewPlots2(self):
-        fig = plt.figure(figsize=(8, 6))
-        x=len(self.deltas)
-        plt.plot(range(0,x), self.deltas,'b')
-        plt.xlabel('Packet')
-        plt.ylabel('Cycle Time')
-        plt.title('cycle time of packets ')
-        graph_window = QDialog(self)
-        graph_window.setWindowTitle('Graphs')
-        # Embed the graph in the Qt window using FigureCanvasQTAgg
-        canvas = FigureCanvasQTAgg(fig)
-
-
-        fig2=plt.figure(figsize=(8,6))
-        plt.boxplot(self.deltas)
-        plt.xlabel('Data Capture')
-        plt.ylabel('Cycle Time')
-        plt.title('Cycle Time Box Plot ')
-        canvas2=FigureCanvasQTAgg(fig2)
-        graph_window.setLayout(QVBoxLayout())
-        graph_window.layout().addWidget(canvas)
-        graph_window.layout().addWidget(canvas2)
-
-
-        #graph_window.layout().addWidget(AvgLabel)
-
-        # Show the window
-        graph_window.exec_()
-        
-        # Close the previous figure to avoid displaying it in the Python output
-        plt.close(fig)
