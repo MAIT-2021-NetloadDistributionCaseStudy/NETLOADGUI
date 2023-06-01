@@ -17,13 +17,13 @@ class PandasTable(QWidget):
     def __init__(self, df):
         super().__init__()
 
-        # Create a layout for the table view
+        # Create a layout for the self.table view
         layout = QVBoxLayout(self)
 
-        # Create a standard item model for the table view
+        # Create a standard item model for the self.table view
         model = QStandardItemModel(self)
 
-        # Set the headers of the table view
+        # Set the headers of the self.table view
         headers = df.columns.tolist()
         model.setHorizontalHeaderLabels(headers)
 
@@ -36,7 +36,7 @@ class PandasTable(QWidget):
                 row.append(cell)
             model.appendRow(row)
 
-        # Create the table view and set its model
+        # Create the self.table view and set its model
         table_view = QTableView(self)
         table_view.setModel(model)
         layout.addWidget(table_view)
@@ -121,7 +121,6 @@ class Page(QWidget):
         #self.main2.addWidget(import_button2)
         self.main2.addLayout(subMain)
 
-
         window.tab2.setLayout(self.main2)
 
     def import_file(self):
@@ -141,7 +140,7 @@ class Page(QWidget):
       
       
     def display_csv_table(self,df):
-        # Create a new window to display the table
+        # Create a new window to display the self.table
         self.table_window = QWidget()
         self.table_window.setWindowTitle('CSV Table')
         self.table_window.setGeometry(100, 100, 800, 600)
@@ -153,76 +152,102 @@ class Page(QWidget):
             
         
         arr1=df['Source'].unique()
-        
+        self.source.clear()
+        self.calc.setText("")
+        self.calc2.setText("")
         for a in arr1:
             self.source.addItem(str(a))
         
-        table = PandasTable(df)
-        self.main2.addWidget(table)
+        
+        
+        try:
+            self.table.setParent(None)
+        except:
+            pass
+        
+        self.table = PandasTable(df)
+        try:
+            self.main2.addWidget(self.table)
+            self.choosePorts()
+        except Exception as e:
+            print(e)
+            
+
+
 
     def choosePorts(self):
-        self.portA.clear()
-        self.portB.clear()
+        try:
 
-        df=self.df.copy()
-        filtered_df=df[(df['Source']==self.source.currentText())]
-        arr=filtered_df['Reception Port'].unique()
-        for a in arr:
-            self.portA.addItem(str(a))
-            self.portB.addItem(str(a))
+            self.portA.clear()
+            self.portB.clear()
 
+            df=self.df.copy()
+            filtered_df=df[(df['Source']==self.source.currentText())]
+            arr=filtered_df['Reception Port'].unique()
+            for a in arr:
+                self.portA.addItem(str(a))
+                self.portB.addItem(str(a))
+            self.cal.setEnabled(True)
+            self.plot.setEnabled(True)
+        except:
+            mbox=QMessageBox.warning(self,"Warning ","Imported Packets don't include Reception Port information")
+            self.cal.setEnabled(False)
+            self.plot.setEnabled(False)
     def calcAvgDelay(self):
       #def cal(data,portA,portB):
-        data=self.df.copy()
-        data.set_index('No.', inplace=True)
-        df=data[data['Protocol'] == 'PNIO']
-        src=self.source.currentText()
-        prtA=self.portA.currentText()
-        prtB=self.portB.currentText()
-        data1 = df[(df['Reception Port'] == int(prtA)) & (df['Source']==src) ]
-        data2 = df[(df['Reception Port'] == int(prtB)) & (df['Source']==src) ]
-        count=data2['Time'].count()
-        val1=[]
-        length=[]
+        try:
+            data=self.df.copy()
+            data.set_index('No.', inplace=True)
+            df=data[data['Protocol'] == 'PNIO']
+            src=self.source.currentText()
+            prtA=self.portA.currentText()
+            prtB=self.portB.currentText()
+            data1 = df[(df['Reception Port'] == int(prtA)) & (df['Source']==src) ]
+            data2 = df[(df['Reception Port'] == int(prtB)) & (df['Source']==src) ]
+            count=data2['Time'].count()
+            val1=[]
+            length=[]
 
 
-        for i in range(0,count):
-            r1=data1.iloc[[i],[6]].values
-            r2=data2.iloc[[i],[6]].values
+            for i in range(0,count):
+                r1=data1.iloc[[i],[6]].values
+                r2=data2.iloc[[i],[6]].values
 
-            x=str(r1)
-            x1=x[30:41]
-            y=str(r2)
-            y1=y[30:41]
-            if x1 == y1:
-                delta=data1.iloc[[i]]["Time"].values
-                delta2=data2.iloc[[i]]["Time"].values
-                l=delta2-delta
-                l_abs=abs(l[0])
+                x=str(r1)
+                x1=x[30:41]
+                y=str(r2)
+                y1=y[30:41]
+                if x1 == y1:
+                    delta=data1.iloc[[i]]["Time"].values
+                    delta2=data2.iloc[[i]]["Time"].values
+                    l=delta2-delta
+                    l_abs=abs(l[0])
 
-                if l[0] < 0:
-                    port=prtB
-                    s=data2.iloc[[i]].index.values
-                    f=data1.iloc[[i]].index.values
-                else:
-                    port=prtA
-                    s=data1.iloc[[i]].index.values
-                    f=data2.iloc[[i]].index.values
-                
-                newFrame=data[s[0]:f[0]]
-                tcpFrame=newFrame[(newFrame['Reception Port'] == int(port)) ]
-                x=tcpFrame['Length'].sum()
-                length.append(x)
-                val1.append(l_abs)
-        
-        self.avg=sum(val1) / len(val1)
-        self.avg2=sum(length) / len(length)
-        #print(self.avg)
-        self.calc.setText(str(self.avg))
-        self.calc2.setText(str(self.avg2))
+                    if l[0] < 0:
+                        port=prtB
+                        s=data2.iloc[[i]].index.values
+                        f=data1.iloc[[i]].index.values
+                    else:
+                        port=prtA
+                        s=data1.iloc[[i]].index.values
+                        f=data2.iloc[[i]].index.values
+                    
+                    newFrame=data[s[0]:f[0]]
+                    tcpFrame=newFrame[(newFrame['Reception Port'] == int(port)) ]
+                    x=tcpFrame['Length'].sum()
+                    length.append(x)
+                    val1.append(l_abs)
+            
+            self.avg=sum(val1) / len(val1)
+            self.avg2=sum(length) / len(length)
+            #print(self.avg)
+            self.calc.setText(str(self.avg))
+            self.calc2.setText(str(self.avg2))
 
-        self.val=val1
-        self.length=length
+            self.val=val1
+            self.length=length
+        except Exception as e:
+            print(e)
     
     
     def calcCycleTime(self):
