@@ -1,7 +1,7 @@
 import os
 import sys
 import pandas as pd
-import pandastable
+#import pandastable
 from tabulate import tabulate
 
 import matplotlib
